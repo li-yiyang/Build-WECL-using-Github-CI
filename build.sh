@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
+set -e
 # Building WECL with latest ECL
 # This script is just a copy of
 # https://turtleware.eu/posts/Common-Lisp-and-WebAssembly.html
+
+# Directory of this script (where WECL.patch lives), resolved before we cd away.
+WECL_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ##### Building ECL
 git clone https://gitlab.com/embeddable-common-lisp/ecl.git
@@ -37,9 +41,14 @@ cd wecl
 
 pushd Code
 cp -r ${ECL_WASM} wasm-ecl
-git clone https://github.com/dkochmanski/slime.git
+# Maybe remove the slime won't affect too much
+# git clone https://github.com/dkochmanski/slime.git
 popd
 
+# Apply WECL.patch (emcc -O3 -Oz, slime not embedded) to the upstream
+# make.sh before building. -p1 strips the a/ b/ prefixes of the diff.
+patch -p1 --batch -i "${WECL_SRC}/WECL.patch" ./make.sh
+grep -q 'emcc -O3 -Oz' make.sh
 ./make.sh build
 
 ##### Prepare files for release
