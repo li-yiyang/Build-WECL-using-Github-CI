@@ -1,0 +1,22 @@
+#+title: Build WECL using Github Workflow
+#+author: 凉凉
+* Credits
+Without [[https://turtleware.eu/][Daniel Kochmański]]'s work (see [[https://turtleware.eu/posts/Common-Lisp-and-WebAssembly.html][Common Lisp and WebAssembly]]),
+this work would be nothing.
+
+* Usage
+Download the release WECL.tar.gz and refer the =WECL/*.html= for examples.
+To be plain, just include the =boot.js=, =wecl.js= in your web, and you can
+use:
+
+#+begin_src html
+  <script type="text/common-lisp">
+    ;; common lisp code here
+  </script>
+#+end_src
+
+or ~<script type="text/common-lisp" src="..."></script>~ to insert common
+lisp code directly into the web.
+
+* TODO Future
+Maybe some hack on [[https://fossil.turtleware.eu/wecl][WECL]] would help customize the pre-compiled libraries. 

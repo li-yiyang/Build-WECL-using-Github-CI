@@ -1,0 +1,72 @@
+name: Build WECL
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Every Monday at 03:00 UTC
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-wecl
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build on Ubuntu (x86_64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            fossil \
+            git \
+            build-essential
+
+      - name: Free disk space
+        run: |
+          # The ECL + Emscripten build is large; drop toolchains we don't need.
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - name: Build WECL
+        run: bash build.sh
+
+      - name: Verify tarball
+        run: |
+          test -s "$HOME/WECL.tar.gz"
+          ls -lh "$HOME/WECL.tar.gz"
+          tar tzf "$HOME/WECL.tar.gz" | head -20
+          cp "$HOME/WECL.tar.gz" "$GITHUB_WORKSPACE/WECL.tar.gz"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WECL-${{ github.run_number }}
+          path: ${{ github.workspace }}/WECL.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Compute release tag
+        id: vars
+        run: echo "tag=wecl-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: WECL ${{ steps.vars.outputs.tag }}
+          files: ${{ github.workspace }}/WECL.tar.gz
+          generate_release_notes: true
+          make_latest: true
+          fail_on_unmatched_files: true
