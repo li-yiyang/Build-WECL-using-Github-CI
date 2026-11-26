@@ -63,7 +63,7 @@ cp webserver.lisp App
 mv App WECL
 pushd WECL
 # try to push the wasm size to the limit
-llvm-strip --strip-debug wecl.wasm
+emstrip -s wecl.wasm
 popd
 tar czf WECL.tar.gz WECL
 cp WECL.tar.gz ~/
