@@ -48,7 +48,7 @@ popd
 # Apply WECL.patch (emcc -O3 -Oz, slime not embedded) to the upstream
 # make.sh before building. -p1 strips the a/ b/ prefixes of the diff.
 patch -p1 --batch -i "${WECL_SRC}/WECL.patch" ./make.sh
-grep -q 'emcc -O3 -Oz' make.sh
+grep -q 'emcc -O3 -Oz -flto -g0' make.sh
 ./make.sh build
 
 ##### Prepare files for release
@@ -61,5 +61,9 @@ cp webserver.lisp App
 # rename the WECL just to make the release files
 # more pretty when user got their files.
 mv App WECL
+pushd WECL
+# try to push the wasm size to the limit
+llvm-strip --strip-debug wecl.wasm
+popd
 tar czf WECL.tar.gz WECL
 cp WECL.tar.gz ~/

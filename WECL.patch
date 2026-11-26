@@ -3,7 +3,7 @@
 @@ -47,27 +47,26 @@
      cp wasm-ecl/wecl.js wasm-ecl/wecl.wasm .
  }
- 
+
  function build () {
      echo "Building..."
      cp -r packages.lisp utilities.lisp wecl.lisp script-loader.lisp \
@@ -12,7 +12,7 @@
      rm -rf wasm-ecl/slime/.git/
      pushd wasm-ecl
 -    emcc -O3 \
-+    emcc -O3 -Oz \
++    emcc -O3 -Oz -flto -g0 \
           -sASSERTIONS=1 \
           -sASYNCIFY -sASYNCIFY_STACK_SIZE=67108864 \
           -sASYNCIFY_IMPORTS=[cl_eval,js_wait,js_read] \
